@@ -189,17 +189,19 @@ int main(void)
 	struct Node* node = ranges.first;
 	while (node != NULL) {
 		int cache_lines = (node->range.end - node->range.start) / CACHE_LINE_SIZE;
+		printf("range %p-%p:\n", node->range.start, node->range.end);
 		struct Line *hits = node->range.cache_line_hit;
 		qsort(hits, cache_lines, sizeof(*hits), cmp_line);
 		for (int i = 0; i < cache_lines; ++i) {
 			uint32_t index = hits[i].index;
 			if (hits[i].count > 0) {
-				printf("%p\t%u\t\t+%d\t\t\t+%u\t\t+%u\n",
+				printf("%p\t%u\t\t+%d\t\t\t+%u\t\t+<%u-%u>\n",
 					node->range.start + index * CACHE_LINE_SIZE,
 					hits[i].count,
 					index,
 					index*CACHE_LINE_SIZE,
-					index*CACHE_LINE_SIZE/8
+					index*CACHE_LINE_SIZE/8,
+					index*CACHE_LINE_SIZE/8 + CACHE_LINE_SIZE/8
 				);
 			}
 		}

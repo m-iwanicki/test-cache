@@ -78,3 +78,12 @@ is how many times this function will be called. E.g.:
     0x7f0382254080  809             +2                      +128            +16
     0x7f0382254640  809             +25                     +1600           +200
     ```
+
+    Cache line offsets might not be correct as on `i5-1240p` it looks like
+    address to cache line should be offset by `0x20` (32 bytes or 4 `uint64_t`
+    elements). In other words accessing array indices between 4 and 11 will
+    result in only one cache line being read.
+    Accessing indices `<x, x+8>` e.g. 4 and 12 results for some reason in
+    multiple cache line hits (possibly even whole array is cached), but
+    when accessing indices 4 and 13 it doesn't happen. Possibly some
+    architecture optimization.

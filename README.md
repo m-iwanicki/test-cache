@@ -2,19 +2,38 @@
 
 ## Preparation
 
-If testing on i7-14700k then copy `i7-14700k` to correct dir:
+Copy configuration files:
 
-```
-cp files/i7-14700k.h armageddon/libflush/libflush/eviction/strategies/
+```sh
+cp files/* armageddon/libflush/libflush/eviction/strategies/
 ```
 
-If not then change `LIBFLUSH_CONFIGURATION` when calling make to custom config
-or to `default` (more in armageddon repo readme)
+To create custom config you can check (replace `index3` with the highest index
+available):
+
+```sh
+cat /sys/devices/system/cpu/cpu0/cache/index3/{coherency_line_size,number_of_sets}
+64
+24576
+```
+
+and modify
+
+```c
+#define NUMBER_OF_SETS 24576
+#define LINE_LENGTH_LOG2 6
+#define LINE_LENGTH 64
+```
+
+in config header accordingly
 
 ## Build
 
+Replace `<CONFIG>` with name of header file (without `.h` suffix) that's
+available in `armageddon/libflush/libflush/eviction/strategies/`
+
 ```sh
-make
+make LIBFLUSH_CONFIGURATION=<CONFIG>
 ```
 
 ## Run
@@ -22,7 +41,7 @@ make
 Run both `access_shared_mem` and `test_libflush` at the same time.
 
 1. `access_shared_mem` will call `libshared_lib.so` function which accesses
-array indices passed as a argument to `access_shared_mem`. First argument
+array indices passed as an argument to `access_shared_mem`. First argument
 is how many times this function will be called. E.g.:
 
     ```sh

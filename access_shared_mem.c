@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#define SHM_SIZE 1024*512
 #define msleep(x) usleep(x*1000);
 
 int main(int argc, char** argv)

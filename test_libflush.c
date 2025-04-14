@@ -13,8 +13,6 @@
 #include <calibrate.h>
 #include <signal.h>
 
-#define LLC_SIZE 1024*1024*33
-#define SHM_SIZE 1024*512
 #define CACHE_LINE_SIZE 64
 #define TEST_REPEAT 300
 #define RELOAD_WAIT_US 5

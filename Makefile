@@ -1,6 +1,6 @@
 CFLAGS ?= -Wall -I $(LIBFLUSH) -I $(CALIBRATE_DIR)
-LDFLAGS ?= -L $(LIBFLUSH)/build/$(ARCH)/release -l flush
-ODIR = obj
+LDFLAGS ?= -L $(LIBFLUSH)/build/$(ARCH)/release -l flush -L bin -l shared_lib
+ODIR ?= obj
 BINDIR ?= bin
 
 ARCH ?= x86
@@ -9,21 +9,29 @@ CALIBRATE_DIR = $(ARMAGEDDON)/cache_template_attacks/cache_template_attack
 LIBFLUSH = $(ARMAGEDDON)/libflush
 LIBFLUSH_CONFIGURATION ?= i7-14700k
 
-MAIN = test_original test_libflush
-HELPER = access_shared_mem no_access_shared_mem
-BINARIES = $(MAIN) $(HELPER)
-_OBJS = $(patsubst %, %.o, $(BINARIES))
-OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
+_MAIN = test_libflush
+_HELPER = access_shared_mem
+_SHARED = libshared_lib.so
+_BINARIES = $(_SHARED) $(_HELPER) $(_MAIN)
+
+MAIN = $(patsubst %, $(BINDIR)/%, $(_MAIN))
+HELPER = $(patsubst %, $(BINDIR)/%, $(_HELPER))
+SHARED = $(patsubst %, $(BINDIR)/%, $(_SHARED))
+BINARIES = $(patsubst %, $(BINDIR)/%, $(_BINARIES))
+OBJS = $(patsubst %,$(ODIR)/%.o,$(_MAIN) $(_HELPER)) $(patsubst lib%.so,$(ODIR)/%.o,$(_SHARED))
 
 .PHONY: all $(LIBFLUSH)
 all: $(BINARIES)
 
-$(MAIN): test_%: $(LIBFLUSH) $(ODIR)/test_%.o $(ODIR)/calibrate.o $(BINDIR)
-	$(CC) $(CFLAGS) $(ODIR)/calibrate.o $(ODIR)/$@.o -o $(BINDIR)/$@ $(LDADD) $(LDFLAGS)
+$(HELPER): $(BINDIR)/%: $(ODIR)/%.o $(BINDIR)
+	$(CC) $(CFLAGS) $(ODIR)/$*.o -o $@ $(LDADD) $(LDFLAGS)
 
-.SECONDEXPANSION:
-$(HELPER): $(ODIR)/$$@.o $(BINDIR)
-	$(CC) $(CFLAGS) $(ODIR)/$@.o -o $(BINDIR)/$@ $(LDADD) $(LDFLAGS) -Wl,--as-needed
+$(MAIN): $(BINDIR)/test_%: $(LIBFLUSH) $(ODIR)/test_%.o $(ODIR)/calibrate.o $(BINDIR)
+	$(CC) $(CFLAGS) $(ODIR)/calibrate.o $(ODIR)/test_$*.o -o $@ $(LDADD) $(LDFLAGS)
+
+$(SHARED): $(BINDIR)/lib%.so: $(ODIR) $(BINDIR)
+	$(CC) $(CFLAGS) -c -fpic -o $(ODIR)/$*.o  $*.c
+	$(CC) $(CFLAGS) -shared -o $@ $(ODIR)/$*.o
 
 $(LIBFLUSH):
 	$(MAKE) ARCH=$(ARCH) DEVICE_CONFIGURATION=$(LIBFLUSH_CONFIGURATION) HAVE_PAGEMAP_ACCESS=1 -C $@

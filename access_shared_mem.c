@@ -1,26 +1,34 @@
-#include <err.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <fcntl.h>
-#include <time.h>
+#include "shared_lib.h"
 #include <unistd.h>
-#include <sys/mman.h>
-#include <stdatomic.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
 
 #define SHM_SIZE 1024*512
+#define msleep(x) usleep(x*1000);
 
-int main(void)
+int main(int argc, char** argv)
 {
-    int fd = shm_open("test",  O_RDWR, 0666);
-    if (fd == -1) {
-        perror("shm_open");
-        return -1;
+    uint64_t result = 0;
+    size_t *indices;
+    uint64_t repeat;
+    if (argc < 3) {
+        printf("%s repeat index [index]...\n", argv[0]);
+        return 1;
     }
-    volatile uint8_t *shared_mem = mmap(0, SHM_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-    *shared_mem = 0;
+    repeat = strtoull(argv[1], NULL, 10);
+    indices = malloc((argc - 2) * sizeof(size_t));
+    for (int i = 0; i < (argc - 2); ++i) {
+        indices[i] = strtoul(argv[i + 2], NULL, 10);
+    }
 
-    close(fd);
+    const struct timespec ts = {.tv_sec = 0, .tv_nsec = 500};
+
+    for (uint64_t i = 0; i < repeat; ++i) {
+        result ^= access_array(argc - 2, indices);
+        nanosleep(&ts, NULL);
+    }
+
+    printf("result = %lu\n", result);
     return 0;
 }

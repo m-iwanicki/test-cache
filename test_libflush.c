@@ -227,13 +227,17 @@ int main(int argc, char **argv)
 	}
 
 	signal(SIGINT, int_handler);
-	printf("\nFlush+Reload:\n");
+	printf("Evict+Time:\n");
 	evict_and_time(ranges);
+	printf("\nFlush+Reload:\n");
 	fflush(NULL);
 	// CTRL+C to stop and display statistics
+	uint64_t counter=0;
 	while(!stop) {
 		flush_and_reload(ranges);
+		counter++;
 	}
+	printf("Flush+Reload counter = %lu\n", counter);
 
 	printf("Addr\t\tCache hits\tCache line offset\tByte offset\tuint64_t offset\n");
 	struct Node* node = ranges.first;

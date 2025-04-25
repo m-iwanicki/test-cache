@@ -22,7 +22,7 @@
 
 #define SEC_TO_NS(sec) ((sec)*1000000000)
 
-uint64_t dummy_value;
+volatile uint64_t dummy_value;
 uint64_t threshold;
 volatile uint8_t *shared_mem;
 libflush_session_t* libflush_session;
@@ -104,15 +104,10 @@ void evict_and_time(size_t count, size_t *indices) {
 	}
 	time_avg_1 /= TEST_REPEAT;
 
-	printf("count = %lu\n", count);
-	printf("Indices: ");
-	for (int i = 0; i < count; ++i) {
-		printf("%lu ", indices[i]);
-	}
-	printf("\n");
-
 	for (int i = 0; i < TEST_REPEAT; ++i) {
-		flush();
+		libflush_memory_barrier();
+		libflush_flush(libflush_session, get_array());
+		libflush_memory_barrier();
 		libflush_memory_barrier();
 		uint64_t time = libflush_get_timing(libflush_session);
 		libflush_memory_barrier();
@@ -123,9 +118,9 @@ void evict_and_time(size_t count, size_t *indices) {
 	time_avg_2 /= TEST_REPEAT;
 
 	if (time_avg_2 > time_avg_1)
-		printf("Evicted cache: %lu slower\n", time_avg_2 - time_avg_1);
+		printf("%lu\n", time_avg_2 - time_avg_1);
 	else
-		printf("Evicted cache: %lu quicker\n", time_avg_1 - time_avg_2);
+		printf("-%lu\n", time_avg_1 - time_avg_2);
 }
 
 void int_handler(int unused) {
@@ -137,7 +132,6 @@ void int_handler(int unused) {
 
 int main(int argc, char **argv)
 {
-	printf("Prepare program\n");
 	fflush(NULL);
 	if (libflush_init(&libflush_session, NULL) == false) {
 		return -1;
@@ -150,13 +144,7 @@ int main(int argc, char **argv)
     }
 
 	signal(SIGINT, int_handler);
-	printf("shared array = %p\n", get_array());
-	printf("Evict+Time:\n");
 	evict_and_time(argc - 1, indices);
-	printf("\nFlush+Reload:\n");
-	fflush(NULL);
-
-	printf("Dummy value: %lu\n", dummy_value);
 
 	// Terminate libflush
 	if (libflush_terminate(libflush_session) == false) {

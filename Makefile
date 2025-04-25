@@ -13,6 +13,17 @@ LIBFLUSH = $(ARMAGEDDON)/libflush
 LIBFLUSH_CONFIGURATION ?= i7-14700k
 LLC_SIZE = 1024*1024
 
+# EXPORT FOR LIBFLUSH MAKEFILE
+DEVICE_CONFIGURATION=$(LIBFLUSH_CONFIGURATION)
+HAVE_PAGEMAP_ACCESS=1
+export ARCH
+export DEVICE_CONFIGURATION
+export HAVE_PAGEMAP_ACCESS
+ifneq ($(TIME_SOURCE),)
+export TIME_SOURCE
+endif
+# end exports
+
 _MAIN = test_libflush
 _HELPER = access_shared_mem
 _SHARED = libshared_lib.so
@@ -38,12 +49,12 @@ $(SHARED): $(BINDIR)/lib%.so: $(ODIR) $(BINDIR)
 	$(CC) $(CFLAGS) -shared -o $@ $(ODIR)/$*.o
 
 $(LIBFLUSH):
-	$(MAKE) CC=$(CC) ARCH=$(ARCH) DEVICE_CONFIGURATION=$(LIBFLUSH_CONFIGURATION) HAVE_PAGEMAP_ACCESS=1 -C $@
+	$(MAKE) CC=$(CC) -C $@
 
 .PHONY: clean run
 clean:
 	rm -rf $(BINDIR) $(ODIR)
-	$(MAKE) ARCH=$(ARCH) -C $(LIBFLUSH) clean
+	$(MAKE) CC=$(CC) -C $(LIBFLUSH) clean
 
 $(ODIR)/%.o: %.c $(ODIR)
 	$(CC) $(CFLAGS) -c -o $@ $<

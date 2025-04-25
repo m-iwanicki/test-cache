@@ -1,4 +1,7 @@
 CFLAGS ?= -Wall -I $(LIBFLUSH) -I $(CALIBRATE_DIR) -DLLC_SIZE=$(LLC_SIZE) -DLIBFLUSH_CONFIGURATION=\"libflush/eviction/strategies/$(LIBFLUSH_CONFIGURATION).h\"
+ifeq ($(DEBUG), 1)
+CFLAGS += -g -Og
+endif
 LDFLAGS ?= -L $(LIBFLUSH)/build/$(ARCH)/release -l flush -L bin -l shared_lib
 ODIR ?= obj
 BINDIR ?= bin

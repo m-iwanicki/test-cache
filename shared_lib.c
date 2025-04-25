@@ -22,7 +22,7 @@ static const uint64_t array[256] = {
 };
 
 uint64_t access_array(size_t count, const size_t *indices) {
-    uint64_t result;
+    uint64_t result = {0};
     for (size_t i = 0; i < count; ++i) {
         result ^= array[indices[i] % 256];
     }

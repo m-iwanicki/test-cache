@@ -1,4 +1,4 @@
-CFLAGS ?= -Wall -I $(LIBFLUSH) -I $(CALIBRATE_DIR)
+CFLAGS ?= -Wall -I $(LIBFLUSH) -I $(CALIBRATE_DIR) -DLLC_SIZE=$(LLC_SIZE) -DLIBFLUSH_CONFIGURATION=\"libflush/eviction/strategies/$(LIBFLUSH_CONFIGURATION).h\"
 LDFLAGS ?= -L $(LIBFLUSH)/build/$(ARCH)/release -l flush -L bin -l shared_lib
 ODIR ?= obj
 BINDIR ?= bin
@@ -8,6 +8,7 @@ ARMAGEDDON ?= armageddon
 CALIBRATE_DIR = $(ARMAGEDDON)/cache_template_attacks/cache_template_attack
 LIBFLUSH = $(ARMAGEDDON)/libflush
 LIBFLUSH_CONFIGURATION ?= i7-14700k
+LLC_SIZE = 1024*1024
 
 _MAIN = test_libflush
 _HELPER = access_shared_mem
@@ -23,11 +24,11 @@ OBJS = $(patsubst %,$(ODIR)/%.o,$(_MAIN) $(_HELPER)) $(patsubst lib%.so,$(ODIR)/
 .PHONY: all $(LIBFLUSH)
 all: $(BINARIES)
 
-$(HELPER): $(BINDIR)/%: $(ODIR)/%.o $(BINDIR)
-	$(CC) $(CFLAGS) $(ODIR)/$*.o -o $@ $(LDADD) $(LDFLAGS)
+$(HELPER): $(BINDIR)/%: $(ODIR)/%.o $(BINDIR) $(LIBFLUSH)
+	$(CC) $(CFLAGS) $(ODIR)/$*.o -o $@ $(LDFLAGS) $(LDADD)
 
 $(MAIN): $(BINDIR)/test_%: $(LIBFLUSH) $(ODIR)/test_%.o $(ODIR)/calibrate.o $(BINDIR)
-	$(CC) $(CFLAGS) $(ODIR)/calibrate.o $(ODIR)/test_$*.o -o $@ $(LDADD) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(ODIR)/calibrate.o $(ODIR)/test_$*.o -o $@ $(LDFLAGS) $(LDADD)
 
 $(SHARED): $(BINDIR)/lib%.so: $(ODIR) $(BINDIR)
 	$(CC) $(CFLAGS) -c -fpic -o $(ODIR)/$*.o  $*.c
@@ -39,6 +40,7 @@ $(LIBFLUSH):
 .PHONY: clean run
 clean:
 	rm -rf $(BINDIR) $(ODIR)
+	$(MAKE) ARCH=$(ARCH) -C $(LIBFLUSH) clean
 
 $(ODIR)/%.o: %.c $(ODIR)
 	$(CC) $(CFLAGS) -c -o $@ $<

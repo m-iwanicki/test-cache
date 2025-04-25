@@ -30,10 +30,11 @@ in config header accordingly
 ## Build
 
 Replace `<CONFIG>` with name of header file (without `.h` suffix) that's
-available in `armageddon/libflush/libflush/eviction/strategies/`
+available in `armageddon/libflush/libflush/eviction/strategies/` and set
+`<LLC_SIZE>` to the size of your LLC e.g. `"1024*1024*32"` for 32 MB LLC.
 
 ```sh
-make LIBFLUSH_CONFIGURATION=<CONFIG>
+make LIBFLUSH_CONFIGURATION=<CONFIG> LLC_SIZE=<LLC_SIZE>
 ```
 
 ## Run

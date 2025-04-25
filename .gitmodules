@@ -1,3 +1,4 @@
 [submodule "armageddon"]
 	path = armageddon
 	url = https://github.com/isec-tugraz/armageddon.git
+	ignore = dirty

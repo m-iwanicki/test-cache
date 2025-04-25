@@ -28,3 +28,8 @@ uint64_t access_array(size_t count, const size_t *indices) {
     }
     return result;
 }
+
+
+const void* get_array() {
+    return array;
+}

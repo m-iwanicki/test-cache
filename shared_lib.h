@@ -5,5 +5,6 @@
 #include <stdint.h>
 
 extern uint64_t access_array(size_t count, const size_t *indices);
+extern const void* get_array();
 
 #endif

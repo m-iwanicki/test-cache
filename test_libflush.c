@@ -157,14 +157,19 @@ void int_handler(int unused) {
 	stop = true;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	printf("Prepare program\n");
 	fflush(NULL);
 	if (libflush_init(&libflush_session, NULL) == false) {
 		return -1;
 	}
-	threshold = calibrate(libflush_session);
+
+	if (argc == 1 || argv[1][0] == '0')
+		threshold = calibrate(libflush_session);
+	else
+		sscanf(argv[1], "%lu", &threshold);
+
 	printf("Calibration threshold: %lu\n", threshold);
 
 	pid_t pid = getpid();

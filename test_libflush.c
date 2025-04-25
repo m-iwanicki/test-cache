@@ -154,6 +154,9 @@ void evict_and_time(struct List ranges) {
 }
 
 void int_handler(int unused) {
+	if (stop) {
+		exit(1);
+	}
 	stop = true;
 }
 

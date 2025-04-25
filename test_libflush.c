@@ -15,6 +15,7 @@
 #include <calibrate.h>
 #include <signal.h>
 
+#define WAYS 16
 #define TEST_REPEAT 1000
 #define RELOAD_WAIT_US 5
 #define msleep(x) usleep(x*1000);
@@ -93,10 +94,12 @@ void time_cache_access(volatile uint8_t *buffer) {
 }
 
 void flush_range(struct Range range) {
-	void* addr = range.start;
-	while (addr < range.end) {
-		libflush_flush(libflush_session, addr);
-		addr += LINE_LENGTH;
+	uint8_t* big_array = malloc(LLC_SIZE*WAYS*2);
+	uint8_t* end = big_array + LLC_SIZE*WAYS*2;
+
+	while (big_array < end) {
+		libflush_access_memory(big_array);
+		big_array += LINE_LENGTH;
 	}
 }
 
@@ -135,9 +138,7 @@ void evict_and_time(struct List ranges) {
 	time_avg_1 /= TEST_REPEAT;
 
 	for (int i = 0; i < TEST_REPEAT; ++i) {
-		for (struct Node* range = ranges.first; range != NULL; range = range->next) {
-			flush_range(range->range);
-		}
+		flush_range(ranges.first->range);
 		libflush_memory_barrier();
 		uint64_t time = libflush_get_timing(libflush_session);
 		libflush_memory_barrier();

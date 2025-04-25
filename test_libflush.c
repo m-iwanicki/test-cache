@@ -237,10 +237,10 @@ int main(int argc, char **argv)
 	fflush(NULL);
 	// CTRL+C to stop and display statistics
 	uint64_t counter=0;
-	while(!stop) {
-		flush_and_reload(ranges);
-		counter++;
-	}
+	// while(!stop) {
+	// 	flush_and_reload(ranges);
+	// 	counter++;
+	// }
 	printf("Flush+Reload counter = %lu\n", counter);
 
 	printf("Addr\t\tCache hits\tCache line offset\tByte offset\tuint64_t offset\n");
